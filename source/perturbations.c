@@ -9225,9 +9225,7 @@ int perturbations_derivs(double tau,
         double a = ppw->pvecback[pba->index_bg_a];
         double H = ppw->pvecback[pba->index_bg_H];
         S_cdm = pba->alpha_GH * H / pba->H0;
-        if (pba->time_wear_GH_a_t > 0.) {
-          S_cdm /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
-        }
+        S_cdm /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
         S_cdm *= a*H;
       }
 
