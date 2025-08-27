@@ -437,7 +437,7 @@ int background_functions(
   /* cdm */
   if (pba->has_cdm == _TRUE_) {
     if (pba->use_time_wear_GH == _TRUE_) {
-      pvecback[pba->index_bg_rho_cdm] = pvecback_B[pba->index_bi_rho_cdm];
+      pvecback[pba->index_bg_rho_cdm] = exp(pvecback_B[pba->index_bi_rho_cdm]);
     }
     else {
       pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
@@ -2007,7 +2007,7 @@ int background_solve(
     pba->Omega0_dr = pvecback_integration[pba->index_bi_rho_dr]/pba->H0/pba->H0;
   }
   if (pba->use_time_wear_GH == _TRUE_) {
-    pba->Omega0_cdm = pvecback_integration[pba->index_bi_rho_cdm]/pba->H0/pba->H0;
+    pba->Omega0_cdm = exp(pvecback_integration[pba->index_bi_rho_cdm])/pba->H0/pba->H0;
   }
   /* -> scale-invariant growth rate today */
   D_today = pvecback_integration[pba->index_bi_D];
@@ -2230,7 +2230,7 @@ int background_initial_conditions(
   }
 
   if (pba->use_time_wear_GH == _TRUE_) {
-    pvecback_integration[pba->index_bi_rho_cdm] = pba->Omega0_cdm*pba->H0*pba->H0*pow(a,-3);
+    pvecback_integration[pba->index_bi_rho_cdm] = log(pba->Omega0_cdm*pba->H0*pba->H0*pow(a,-3));
   }
   if (pba->has_dcdm == _TRUE_) {
     /* Remember that the critical density today in CLASS conventions is H0^2 */
@@ -2664,7 +2664,7 @@ int background_derivs(
   if (pba->use_time_wear_GH == _TRUE_) {
     double S = pba->alpha_GH * H / pba->H0;
     S /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
-    dy[pba->index_bi_rho_cdm] = -(3.+S)*y[pba->index_bi_rho_cdm];
+    dy[pba->index_bi_rho_cdm] = -(3.+S);
   }
 
   if (pba->has_dcdm == _TRUE_) {
