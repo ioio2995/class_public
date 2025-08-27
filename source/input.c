@@ -5923,8 +5923,8 @@ int input_default_params(struct background *pba,
   /* Gibbons-Hawking time wear defaults */
   pba->use_time_wear_GH = _FALSE_;
   pba->alpha_GH = 0.;
-  pba->time_wear_GH_a_t = 0.;
-  pba->time_wear_GH_m = 1.;
+  pba->time_wear_GH_a_t = 0.3;
+  pba->time_wear_GH_m = 6.;
   /** 9.a.2) Equation of state */
   pba->fluid_equation_of_state = CLP;
   pba->w0_fld = -1.;

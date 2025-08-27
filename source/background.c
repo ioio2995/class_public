@@ -2663,9 +2663,7 @@ int background_derivs(
 
   if (pba->use_time_wear_GH == _TRUE_) {
     double S = pba->alpha_GH * H / pba->H0;
-    if (pba->time_wear_GH_a_t > 0.) {
-      S /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
-    }
+    S /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
     dy[pba->index_bi_rho_cdm] = -(3.+S)*y[pba->index_bi_rho_cdm];
   }
 
