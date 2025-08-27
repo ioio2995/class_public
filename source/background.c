@@ -436,7 +436,12 @@ int background_functions(
 
   /* cdm */
   if (pba->has_cdm == _TRUE_) {
-    pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
+    if (pba->use_time_wear_GH == _TRUE_) {
+      pvecback[pba->index_bg_rho_cdm] = pvecback_B[pba->index_bi_rho_cdm];
+    }
+    else {
+      pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
+    }
     rho_tot += pvecback[pba->index_bg_rho_cdm];
     p_tot += 0.;
     rho_m += pvecback[pba->index_bg_rho_cdm];
@@ -1156,6 +1161,9 @@ int background_indices(
   /* -> index for conformal time in vector of variables to integrate */
   class_define_index(pba->index_bi_tau,_TRUE_,index_bi,1);
 
+  /* -> energy density in CDM if time wear is enabled */
+  class_define_index(pba->index_bi_rho_cdm,pba->use_time_wear_GH,index_bi,1);
+
   /* -> energy density in DCDM */
   class_define_index(pba->index_bi_rho_dcdm,pba->has_dcdm,index_bi,1);
 
@@ -1801,6 +1809,13 @@ int background_checks(
   /** - in verbose mode, send to standard output some additional information on non-obvious background parameters */
   if (pba->background_verbose > 0) {
 
+    if (pba->background_verbose >= 2 && pba->use_time_wear_GH == _TRUE_) {
+      printf(" -> Gibbons-Hawking time wear activated with alpha_GH = %g\n", pba->alpha_GH);
+      if (pba->time_wear_GH_a_t > 0.) {
+        printf("    switch parameters a_t = %g m = %g\n", pba->time_wear_GH_a_t, pba->time_wear_GH_m);
+      }
+    }
+
     if (pba->has_ncdm == _TRUE_) {
 
       /* loop over ncdm species */
@@ -1990,6 +2005,9 @@ int background_solve(
   }
   if (pba->has_dr == _TRUE_) {
     pba->Omega0_dr = pvecback_integration[pba->index_bi_rho_dr]/pba->H0/pba->H0;
+  }
+  if (pba->use_time_wear_GH == _TRUE_) {
+    pba->Omega0_cdm = pvecback_integration[pba->index_bi_rho_cdm]/pba->H0/pba->H0;
   }
   /* -> scale-invariant growth rate today */
   D_today = pvecback_integration[pba->index_bi_D];
@@ -2209,6 +2227,10 @@ int background_initial_conditions(
   if (pba->has_ncdm == _TRUE_) {
     /** - We must add the relativistic contribution from NCDM species */
     rho_rad += rho_ncdm_rel_tot;
+  }
+
+  if (pba->use_time_wear_GH == _TRUE_) {
+    pvecback_integration[pba->index_bi_rho_cdm] = pba->Omega0_cdm*pba->H0*pba->H0*pow(a,-3);
   }
   if (pba->has_dcdm == _TRUE_) {
     /* Remember that the critical density today in CLASS conventions is H0^2 */
@@ -2638,6 +2660,14 @@ int background_derivs(
 
   dy[pba->index_bi_D] = y[pba->index_bi_D_prime]/a/H;
   dy[pba->index_bi_D_prime] = -y[pba->index_bi_D_prime] + 1.5*a*rho_M*y[pba->index_bi_D]/H;
+
+  if (pba->use_time_wear_GH == _TRUE_) {
+    double S = pba->alpha_GH * H / pba->H0;
+    if (pba->time_wear_GH_a_t > 0.) {
+      S /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
+    }
+    dy[pba->index_bi_rho_cdm] = -(3.+S)*y[pba->index_bi_rho_cdm];
+  }
 
   if (pba->has_dcdm == _TRUE_) {
     /** - compute dcdm density \f$ d\rho/dloga = -3 \rho - \Gamma/H \rho \f$*/

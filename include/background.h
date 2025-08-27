@@ -123,6 +123,12 @@ struct background
   enum varconst_dependence varconst_dep; /**< dependence of the varying fundamental constants as a function of time */
   double varconst_transition_redshift; /**< redshift of transition between varied fundamental constants and normal fundamental constants in the 'varconst_instant' case*/
 
+  /* --- Gibbons-Hawking time wear parameters --- */
+  short use_time_wear_GH; /**< flag for activating Gibbons-Hawking time wear */
+  double alpha_GH; /**< amplitude of time wear */
+  double time_wear_GH_a_t; /**< late-time switch scale factor */
+  double time_wear_GH_m;   /**< steepness of late-time switch */
+
   //@}
 
 
@@ -252,6 +258,7 @@ struct background
 
   //@{
 
+  int index_bi_rho_cdm; /**< {B} cdm density with time wear */
   int index_bi_rho_dcdm;/**< {B} dcdm density */
   int index_bi_rho_dr;  /**< {B} dr density */
   int index_bi_rho_fld; /**< {B} fluid density */

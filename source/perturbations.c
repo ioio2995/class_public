@@ -9220,10 +9220,21 @@ int perturbations_derivs(double tau,
 
     if (pba->has_cdm == _TRUE_) {
 
+      double S_cdm = 0.;
+      if (pba->use_time_wear_GH == _TRUE_) {
+        double a = ppw->pvecback[pba->index_bg_a];
+        double H = ppw->pvecback[pba->index_bg_H];
+        S_cdm = pba->alpha_GH * H / pba->H0;
+        if (pba->time_wear_GH_a_t > 0.) {
+          S_cdm /= 1.+pow(pba->time_wear_GH_a_t/a, pba->time_wear_GH_m);
+        }
+        S_cdm *= a*H;
+      }
+
       /** - ----> newtonian gauge: cdm density and velocity */
 
       if (ppt->gauge == newtonian) {
-        dy[pv->index_pt_delta_cdm] = -(y[pv->index_pt_theta_cdm]+metric_continuity); /* cdm density */
+        dy[pv->index_pt_delta_cdm] = -(y[pv->index_pt_theta_cdm]+metric_continuity) - S_cdm*y[pv->index_pt_delta_cdm]; /* cdm density */
 
         dy[pv->index_pt_theta_cdm] = - a_prime_over_a*y[pv->index_pt_theta_cdm] + metric_euler; /* cdm velocity */
       }
@@ -9231,7 +9242,7 @@ int perturbations_derivs(double tau,
       /** - ----> synchronous gauge: cdm density only (velocity set to zero by definition of the gauge) */
 
       if (ppt->gauge == synchronous) {
-        dy[pv->index_pt_delta_cdm] = -metric_continuity; /* cdm density */
+        dy[pv->index_pt_delta_cdm] = -metric_continuity - S_cdm*y[pv->index_pt_delta_cdm]; /* cdm density */
       }
     }
 

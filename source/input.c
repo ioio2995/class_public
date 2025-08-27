@@ -3371,6 +3371,16 @@ int input_read_parameters_species(struct file_content * pfc,
     }
   }
 
+  /** 9) Optional Gibbons-Hawking time wear */
+  class_read_flag("use_time_wear_GH",pba->use_time_wear_GH);
+  class_read_double("alpha_GH",pba->alpha_GH);
+  class_read_double("a_t",pba->time_wear_GH_a_t);
+  class_read_double("m",pba->time_wear_GH_m);
+  class_test(pba->alpha_GH < 0.0, errmsg, "alpha_GH must be >= 0");
+  if (pba->alpha_GH > 0.1) {
+    printf("[Warning] alpha_GH=%g > 0.1 may lead to instabilities\n",pba->alpha_GH);
+  }
+
   return _SUCCESS_;
 
 }
@@ -5909,6 +5919,12 @@ int input_default_params(struct background *pba,
   /** 8.a.1) PPF approximation */
   pba->use_ppf = _TRUE_;
   pba->c_gamma_over_c_fld = 0.4;
+
+  /* Gibbons-Hawking time wear defaults */
+  pba->use_time_wear_GH = _FALSE_;
+  pba->alpha_GH = 0.;
+  pba->time_wear_GH_a_t = 0.;
+  pba->time_wear_GH_m = 1.;
   /** 9.a.2) Equation of state */
   pba->fluid_equation_of_state = CLP;
   pba->w0_fld = -1.;
