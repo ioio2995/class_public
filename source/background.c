@@ -436,7 +436,7 @@ int background_functions(
 
   /* cdm */
   if (pba->has_cdm == _TRUE_) {
-    pvecback[pba->index_bg_rho_cdm] = pba->Omega0_cdm * pow(pba->H0,2) / pow(a,3);
+    pvecback[pba->index_bg_rho_cdm] = exp(pvecback_B[pba->index_bi_lnrho_cdm]);
     rho_tot += pvecback[pba->index_bg_rho_cdm];
     p_tot += 0.;
     rho_m += pvecback[pba->index_bg_rho_cdm];
@@ -1155,6 +1155,9 @@ int background_indices(
 
   /* -> index for conformal time in vector of variables to integrate */
   class_define_index(pba->index_bi_tau,_TRUE_,index_bi,1);
+
+  /* -> log energy density in CDM */
+  class_define_index(pba->index_bi_lnrho_cdm,pba->has_cdm,index_bi,1);
 
   /* -> energy density in DCDM */
   class_define_index(pba->index_bi_rho_dcdm,pba->has_dcdm,index_bi,1);
@@ -2210,6 +2213,10 @@ int background_initial_conditions(
     /** - We must add the relativistic contribution from NCDM species */
     rho_rad += rho_ncdm_rel_tot;
   }
+  if (pba->has_cdm == _TRUE_) {
+    pvecback_integration[pba->index_bi_lnrho_cdm] =
+      log(pba->Omega0_cdm*pow(pba->H0,2)*pow(a,-3));
+  }
   if (pba->has_dcdm == _TRUE_) {
     /* Remember that the critical density today in CLASS conventions is H0^2 */
     pvecback_integration[pba->index_bi_rho_dcdm] =
@@ -2638,6 +2645,10 @@ int background_derivs(
 
   dy[pba->index_bi_D] = y[pba->index_bi_D_prime]/a/H;
   dy[pba->index_bi_D_prime] = -y[pba->index_bi_D_prime] + 1.5*a*rho_M*y[pba->index_bi_D]/H;
+
+  if (pba->has_cdm == _TRUE_) {
+    dy[pba->index_bi_lnrho_cdm] = -3.;
+  }
 
   if (pba->has_dcdm == _TRUE_) {
     /** - compute dcdm density \f$ d\rho/dloga = -3 \rho - \Gamma/H \rho \f$*/

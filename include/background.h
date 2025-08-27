@@ -252,6 +252,7 @@ struct background
 
   //@{
 
+  int index_bi_lnrho_cdm;/**< {B} log of cdm density */
   int index_bi_rho_dcdm;/**< {B} dcdm density */
   int index_bi_rho_dr;  /**< {B} dr density */
   int index_bi_rho_fld; /**< {B} fluid density */

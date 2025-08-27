@@ -5285,7 +5285,7 @@ int perturbations_initial_conditions(struct precision * ppr,
   double delta_dr=0;
   double q,epsilon,k2;
   int index_q,n_ncdm,idx;
-  double rho_r,rho_m,rho_nu,rho_m_over_rho_r, rho_cdm =0.;
+  double rho_r,rho_m,rho_nu,rho_m_over_rho_r, rho_cdm =0., rho_cdm_bg=0.;
   double fracnu,fracg,fracb,fraccdm = 0.,fracidm = 0.;
   double om;
   double ktau_two,ktau_three;
@@ -5320,7 +5320,9 @@ int perturbations_initial_conditions(struct precision * ppr,
   rho_nu = 0.;
 
   if (pba->has_cdm == _TRUE_) {
-    rho_m += ppw->pvecback[pba->index_bg_rho_cdm];
+    rho_cdm_bg = ppw->pvecback[pba->index_bg_rho_cdm];
+    if (rho_cdm_bg < 0.) rho_cdm_bg = 0.;
+    rho_m += rho_cdm_bg;
   }
 
   if (pba->has_idm == _TRUE_) {
@@ -5376,7 +5378,7 @@ int perturbations_initial_conditions(struct precision * ppr,
 
     /* f_cdm = Omega_cdm(t_i) / Omega_m(t_i) */
     if (pba->has_cdm == _TRUE_)
-      fraccdm = ppw->pvecback[pba->index_bg_rho_cdm]/rho_m;
+      fraccdm = rho_cdm_bg/rho_m;
 
     /* f_idm = Omega_idm(t_i) / Omega_m(t_i) */
     if (pba->has_idm == _TRUE_){
@@ -5686,8 +5688,11 @@ int perturbations_initial_conditions(struct precision * ppr,
       */
 
       if (pba->has_cdm == _TRUE_) {
-        delta_cdm += ppw->pvecback[pba->index_bg_rho_cdm] * ppw->pv->y[ppw->pv->index_pt_delta_cdm];
-        rho_cdm += ppw->pvecback[pba->index_bg_rho_cdm];
+        double rho_cdm_tmp = ppw->pvecback[pba->index_bg_rho_cdm];
+        if (rho_cdm_tmp > 0.) {
+          delta_cdm += rho_cdm_tmp * ppw->pv->y[ppw->pv->index_pt_delta_cdm];
+          rho_cdm += rho_cdm_tmp;
+        }
       }
       if (pba->has_idm == _TRUE_) {
         delta_cdm += ppw->pvecback[pba->index_bg_rho_idm] * ppw->pv->y[ppw->pv->index_pt_delta_idm];
