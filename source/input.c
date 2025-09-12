@@ -399,6 +399,7 @@ int input_read_from_file(struct file_content * pfc,
   /** - Define local variables */
   int input_verbose = 0;
   int has_shooting;
+  int i;
 
   /** Set default values
       Before getting into the assignment of parameters and the shooting, we want
@@ -443,6 +444,14 @@ int input_read_from_file(struct file_content * pfc,
                               errmsg),
              errmsg,
              errmsg);
+
+  if (input_verbose > 0) {
+    printf(" -> CLASS extra_args final:");
+    for (i=0; i<pfc->size; i++) {
+      printf(" %s=%s", pfc->name[i], pfc->value[i]);
+    }
+    printf("\n");
+  }
 
   if (pfo->has_pk_eq == _TRUE_) {
 
@@ -5071,7 +5080,7 @@ int input_read_parameters_spectra(struct file_content * pfc,
                "Configuration invalide: R(z) <= 0 jusqu'a z_guard = %g ; alpha > alpha_min = %g requis.",
                z_guard,alpha_min);
     if (input_verbose > 0)
-      printf(" -> ROFT guard: z_guard = %g, alpha_min = %g\n",z_guard,alpha_min);
+      printf(" -> ROFT guard: z_guard = %g -> alpha_min = %g\n",z_guard,alpha_min);
   }
 
   return _SUCCESS_;
