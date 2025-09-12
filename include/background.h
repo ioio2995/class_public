@@ -117,6 +117,7 @@ struct background
   short has_roft;       /**< presence of ROFT-add dark energy? */
   enum roft_model roft_model_id; /**< identifier for ROFT model */
   double alpha_roft;    /**< ROFT parameter (requires \f$R(z)=1+\alpha_{\mathrm{roft}}\ln(1+z)>0\f$ up to a guard redshift) */
+  double roft_guard_zmax; /**< optional guard redshift enforcing \f$R(z)>0\f$ */
   double Omega_EDE;        /**< \f$ wa_{DE} \f$: Early Dark Energy density parameter */
   double * scf_parameters; /**< list of parameters describing the scalar field potential */
   short attractor_ic_scf;  /**< whether the scalar field has attractor initial conditions */

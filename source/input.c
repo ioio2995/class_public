@@ -1731,6 +1731,20 @@ int input_read_parameters(struct file_content * pfc,
              errmsg,
              errmsg);
 
+  if (pba->has_roft == _TRUE_) {
+    if (pba->roft_guard_zmax <= 0.) {
+      pba->roft_guard_zmax = (ppt->z_max_pk > 0.) ? MAX(ppt->z_max_pk,3000.) : 3000.;
+    }
+    double z_guard = pba->roft_guard_zmax;
+    double alpha_min = -1./log(1.+z_guard);
+    if (input_verbose > 0)
+      printf("ROFT guard: z_guard=%g, alpha_min=%g\n",z_guard,alpha_min);
+    class_test(1.+pba->alpha_roft*log(1.+z_guard) <= 0.,
+               errmsg,
+               "Invalid configuration: R(z)=1+alpha_roft*log(1+z) <= 0 up to z_guard = %g; require alpha_roft > alpha_min = %g.",
+               z_guard,alpha_min);
+  }
+
   return _SUCCESS_;
 
 }
@@ -3283,14 +3297,7 @@ int input_read_parameters_species(struct file_content * pfc,
     class_call(parser_read_double(pfc,"roft_guard_zmax",&param1,&flag1,errmsg),
                errmsg,
                errmsg);
-    double z_guard = flag1 == _TRUE_ ? param1 : 3000.;
-    double alpha_min = -1./log(1.+z_guard);
-    if (input_verbose > 0)
-      printf("ROFT guard: z_guard=%g, alpha_min=%g\n",z_guard,alpha_min);
-    class_test(1.+pba->alpha_roft*log(1.+z_guard) <= 0.,
-               errmsg,
-               "Invalid configuration: R(z)=1+alpha_roft*log(1+z) <= 0 up to z_guard = %g; require alpha_roft > alpha_min = %g.",
-               z_guard,alpha_min);
+    pba->roft_guard_zmax = flag1 == _TRUE_ ? param1 : -1.;
     pba->Omega0_fld += pba->Omega0_lambda;
     pba->Omega0_lambda = 0.;
     if (input_verbose > 0)
@@ -5958,6 +5965,7 @@ int input_default_params(struct background *pba,
   pba->has_roft = _FALSE_;
   pba->roft_model_id = roft_none;
   pba->alpha_roft = 0.;
+  pba->roft_guard_zmax = -1.;
   /** 9.a.2.1) 'CLP' case */
   pba->wa_fld = 0.;
   /** 9.a.2.2) 'EDE' case */
