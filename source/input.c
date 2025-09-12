@@ -3280,17 +3280,18 @@ int input_read_parameters_species(struct file_content * pfc,
   }
   class_read_double("alpha_roft",pba->alpha_roft);
   if (pba->has_roft == _TRUE_) {
-    double z_max = 1./ppr->a_ini_over_a_today_default - 1.;
-    if (z_max <= 0.) z_max = 3000.;
-    double alpha_min = -1./log(1.+z_max);
-    class_test(1.+pba->alpha_roft*log(1.+z_max) <= 0.,
-               errmsg,
-               "Configuration invalide: R(z) <= 0 jusqu'a z_max = %g ; alpha > alpha_min = %g requis.",
-               z_max,alpha_min);
-    pba->Omega0_fld += pba->Omega0_lambda;
-    pba->Omega0_lambda = 0.;
-    if (input_verbose > 0)
-      printf(" -> ROFT-add activated (alpha = %g)\n",pba->alpha_roft);
+    if (pba->alpha_roft == 0.) {
+      pba->has_roft = _FALSE_;
+      pba->roft_model_id = roft_none;
+      if (input_verbose > 0)
+        printf(" -> ROFT-add deactivated (alpha = 0)\n");
+    }
+    else {
+      pba->Omega0_fld += pba->Omega0_lambda;
+      pba->Omega0_lambda = 0.;
+      if (input_verbose > 0)
+        printf(" -> ROFT-add activated (alpha = %g)\n",pba->alpha_roft);
+    }
   }
 
   /* ** END OF BUDGET EQUATION ** */
@@ -4762,6 +4763,8 @@ int input_read_parameters_spectra(struct file_content * pfc,
   int i;
   double z_max=0.;
   int bin;
+  int input_verbose = 0;
+  class_read_int("input_verbose",input_verbose);
 
   /** 1) Maximum l for CLs */
   /* Read */
@@ -5058,6 +5061,17 @@ int input_read_parameters_spectra(struct file_content * pfc,
       }
       /* Now we have checked all contributions that could change z_max_pk */
     }
+  }
+
+  if (pba->has_roft == _TRUE_) {
+    double z_guard = MAX(ppr->roft_guard_zmax,ppt->z_max_pk);
+    double alpha_min = -1./log(1.+z_guard);
+    class_test(1.+pba->alpha_roft*log(1.+z_guard) <= 0.,
+               errmsg,
+               "Configuration invalide: R(z) <= 0 jusqu'a z_guard = %g ; alpha > alpha_min = %g requis.",
+               z_guard,alpha_min);
+    if (input_verbose > 0)
+      printf(" -> ROFT guard: z_guard = %g, alpha_min = %g\n",z_guard,alpha_min);
   }
 
   return _SUCCESS_;
