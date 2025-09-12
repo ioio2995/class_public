@@ -3261,6 +3261,38 @@ int input_read_parameters_species(struct file_content * pfc,
     }
   }
 
+  /* ROFT model parameters */
+  class_call(parser_read_string(pfc,"roft_model",&string1,&flag1,errmsg),
+             errmsg,
+             errmsg);
+  if (flag1 == _TRUE_) {
+    if ((strstr(string1,"add") != NULL) || (strstr(string1,"ADD") != NULL)) {
+      pba->has_roft = _TRUE_;
+      pba->roft_model_id = roft_add;
+    }
+    else if ((strstr(string1,"none") != NULL) || (strstr(string1,"NONE") != NULL)) {
+      pba->has_roft = _FALSE_;
+      pba->roft_model_id = roft_none;
+    }
+    else {
+      class_stop(errmsg,"incomprehensible input '%s' for the field 'roft_model'",string1);
+    }
+  }
+  class_read_double("alpha_roft",pba->alpha_roft);
+  if (pba->has_roft == _TRUE_) {
+    double z_max = 1./ppr->a_ini_over_a_today_default - 1.;
+    if (z_max <= 0.) z_max = 3000.;
+    double alpha_min = -1./log(1.+z_max);
+    class_test(1.+pba->alpha_roft*log(1.+z_max) <= 0.,
+               errmsg,
+               "Configuration invalide: R(z) <= 0 jusqu'a z_max = %g ; alpha > alpha_min = %g requis.",
+               z_max,alpha_min);
+    pba->Omega0_fld += pba->Omega0_lambda;
+    pba->Omega0_lambda = 0.;
+    if (input_verbose > 0)
+      printf(" -> ROFT-add activated (alpha = %g)\n",pba->alpha_roft);
+  }
+
   /* ** END OF BUDGET EQUATION ** */
 
   /** 8.a) If Omega fluid is different from 0 */
@@ -3280,37 +3312,43 @@ int input_read_parameters_species(struct file_content * pfc,
       }
     }
 
-    /** 8.a.2) Equation of state */
-    /* Read */
-    class_call(parser_read_string(pfc,"fluid_equation_of_state",&string1,&flag1,errmsg),
-               errmsg,
-               errmsg);
-    /* Complete set of parameters */
-    if (flag1 == _TRUE_) {
-      if ((strstr(string1,"CLP") != NULL) || (strstr(string1,"clp") != NULL)) {
-        pba->fluid_equation_of_state = CLP;
-      }
-      else if ((strstr(string1,"EDE") != NULL) || (strstr(string1,"ede") != NULL)) {
-        pba->fluid_equation_of_state = EDE;
-      }
-      else {
-        class_stop(errmsg,"incomprehensible input '%s' for the field 'fluid_equation_of_state'",string1);
-      }
+    if (pba->has_roft == _TRUE_) {
+      /* Only sound speed is needed for ROFT-add */
+      class_read_double("cs2_fld",pba->cs2_fld);
     }
+    else {
+      /** 8.a.2) Equation of state */
+      /* Read */
+      class_call(parser_read_string(pfc,"fluid_equation_of_state",&string1,&flag1,errmsg),
+                 errmsg,
+                 errmsg);
+      /* Complete set of parameters */
+      if (flag1 == _TRUE_) {
+        if ((strstr(string1,"CLP") != NULL) || (strstr(string1,"clp") != NULL)) {
+          pba->fluid_equation_of_state = CLP;
+        }
+        else if ((strstr(string1,"EDE") != NULL) || (strstr(string1,"ede") != NULL)) {
+          pba->fluid_equation_of_state = EDE;
+        }
+        else {
+          class_stop(errmsg,"incomprehensible input '%s' for the field 'fluid_equation_of_state'",string1);
+        }
+      }
 
-    if (pba->fluid_equation_of_state == CLP) {
-      /** 8.a.2.2) Equation of state of the fluid in 'CLP' case */
-      /* Read */
-      class_read_double("w0_fld",pba->w0_fld);
-      class_read_double("wa_fld",pba->wa_fld);
-      class_read_double("cs2_fld",pba->cs2_fld);
-    }
-    if (pba->fluid_equation_of_state == EDE) {
-      /** 8.a.2.3) Equation of state of the fluid in 'EDE' case */
-      /* Read */
-      class_read_double("w0_fld",pba->w0_fld);
-      class_read_double("Omega_EDE",pba->Omega_EDE);
-      class_read_double("cs2_fld",pba->cs2_fld);
+      if (pba->fluid_equation_of_state == CLP) {
+        /** 8.a.2.2) Equation of state of the fluid in 'CLP' case */
+        /* Read */
+        class_read_double("w0_fld",pba->w0_fld);
+        class_read_double("wa_fld",pba->wa_fld);
+        class_read_double("cs2_fld",pba->cs2_fld);
+      }
+      if (pba->fluid_equation_of_state == EDE) {
+        /** 8.a.2.3) Equation of state of the fluid in 'EDE' case */
+        /* Read */
+        class_read_double("w0_fld",pba->w0_fld);
+        class_read_double("Omega_EDE",pba->Omega_EDE);
+        class_read_double("cs2_fld",pba->cs2_fld);
+      }
     }
   }
 
@@ -5913,6 +5951,9 @@ int input_default_params(struct background *pba,
   pba->fluid_equation_of_state = CLP;
   pba->w0_fld = -1.;
   pba->cs2_fld = 1.;
+  pba->has_roft = _FALSE_;
+  pba->roft_model_id = roft_none;
+  pba->alpha_roft = 0.;
   /** 9.a.2.1) 'CLP' case */
   pba->wa_fld = 0.;
   /** 9.a.2.2) 'EDE' case */

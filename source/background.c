@@ -674,6 +674,15 @@ int background_w_fld(
   double d2Omega_ede_over_da2 = 0.;
   double a_eq, Omega_r, Omega_m;
 
+  /* ROFT-add model */
+  if (pba->has_roft == _TRUE_) {
+    double R = 1. - pba->alpha_roft * log(a);
+    *w_fld = -1. + pba->alpha_roft/(3.*R);
+    *dw_over_da_fld = pba->alpha_roft*pba->alpha_roft/(3.*R*R*a);
+    *integral_fld = log(R);
+    return _SUCCESS_;
+  }
+
   /** - first, define the function w(a) */
   switch (pba->fluid_equation_of_state) {
   case CLP:
@@ -2061,6 +2070,11 @@ int background_solve(
     printf(" -> age = %f Gyr\n",pba->age);
     printf(" -> conformal age = %f Mpc\n",pba->conformal_age);
     printf(" -> N_eff = %g (summed over all species that are non-relativistic at early times) \n",pba->Neff);
+    if (pba->has_roft == _TRUE_) {
+      double a_min = exp(pba->loga_table[0]);
+      printf(" -> w0 = %g\n", -1. + pba->alpha_roft/3.);
+      printf(" -> R(a=1)=1 ; R(a_min)=%g\n", 1. - pba->alpha_roft*log(a_min));
+    }
   }
 
   if (pba->background_verbose > 2) {
