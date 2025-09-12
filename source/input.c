@@ -3322,9 +3322,10 @@ int input_read_parameters_species(struct file_content * pfc,
       }
     }
 
+    class_read_double("cs2_fld",pba->cs2_fld);
+
     if (pba->has_roft == _TRUE_) {
       /* Only sound speed is needed for ROFT-add */
-      class_read_double("cs2_fld",pba->cs2_fld);
     }
     else {
       /** 8.a.2) Equation of state */
@@ -3350,14 +3351,12 @@ int input_read_parameters_species(struct file_content * pfc,
         /* Read */
         class_read_double("w0_fld",pba->w0_fld);
         class_read_double("wa_fld",pba->wa_fld);
-        class_read_double("cs2_fld",pba->cs2_fld);
       }
       if (pba->fluid_equation_of_state == EDE) {
         /** 8.a.2.3) Equation of state of the fluid in 'EDE' case */
         /* Read */
         class_read_double("w0_fld",pba->w0_fld);
         class_read_double("Omega_EDE",pba->Omega_EDE);
-        class_read_double("cs2_fld",pba->cs2_fld);
       }
     }
   }
