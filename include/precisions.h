@@ -10,6 +10,12 @@
  */
 class_precision_parameter(a_ini_over_a_today_default,double,1.e-14)
 /**
+ * Maximum redshift used when checking positivity of the ROFT-add
+ * parametrisation. Ensures that R(z)=1+alpha_roft*ln(1+z) stays
+ * positive up to this redshift (or a larger z requested elsewhere).
+ */
+class_precision_parameter(roft_guard_zmax,double,3000.)
+/**
  * Number of background integration steps that are stored in the output vector
  */
 class_precision_parameter(background_Nloga,int,40000)
