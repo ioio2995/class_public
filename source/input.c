@@ -3280,13 +3280,17 @@ int input_read_parameters_species(struct file_content * pfc,
   }
   class_read_double("alpha_roft",pba->alpha_roft);
   if (pba->has_roft == _TRUE_) {
-    double z_max = 1./ppr->a_ini_over_a_today_default - 1.;
-    if (z_max <= 0.) z_max = 3000.;
-    double alpha_min = -1./log(1.+z_max);
-    class_test(1.+pba->alpha_roft*log(1.+z_max) <= 0.,
+    class_call(parser_read_double(pfc,"roft_guard_zmax",&param1,&flag1,errmsg),
                errmsg,
-               "Configuration invalide: R(z) <= 0 jusqu'a z_max = %g ; alpha > alpha_min = %g requis.",
-               z_max,alpha_min);
+               errmsg);
+    double z_guard = flag1 == _TRUE_ ? param1 : 3000.;
+    double alpha_min = -1./log(1.+z_guard);
+    if (input_verbose > 0)
+      printf("ROFT guard: z_guard=%g, alpha_min=%g\n",z_guard,alpha_min);
+    class_test(1.+pba->alpha_roft*log(1.+z_guard) <= 0.,
+               errmsg,
+               "Invalid configuration: R(z)=1+alpha_roft*log(1+z) <= 0 up to z_guard = %g; require alpha_roft > alpha_min = %g.",
+               z_guard,alpha_min);
     pba->Omega0_fld += pba->Omega0_lambda;
     pba->Omega0_lambda = 0.;
     if (input_verbose > 0)
