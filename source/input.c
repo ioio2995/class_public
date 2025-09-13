@@ -3286,6 +3286,18 @@ int input_read_parameters_species(struct file_content * pfc,
                "alpha_roft leads to negative R(z) at z=%g",zmax);
   }
 
+  /* Allow specifying ROFT equation of state even when Omega0_fld = 0 */
+  if (pba->Omega0_fld == 0.) {
+    class_call(parser_read_string(pfc,"fluid_equation_of_state",&string1,&flag1,errmsg),
+               errmsg,
+               errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"ROFT") != NULL) || (strstr(string1,"roft") != NULL)) {
+        pba->fluid_equation_of_state = ROFT;
+      }
+    }
+  }
+
   /** 8.a) If Omega fluid is different from 0 */
   if (pba->Omega0_fld != 0.) {
     /** 8.a.1) PPF approximation */
@@ -3338,7 +3350,7 @@ int input_read_parameters_species(struct file_content * pfc,
   }
 
   /* Promote Lambda to fluid for ROFT */
-  if (pba->alpha_roft != 0.) {
+  if ((pba->alpha_roft != 0.) || (pba->fluid_equation_of_state == ROFT)) {
     pba->Omega0_fld += pba->Omega0_lambda;
     pba->Omega0_lambda = 0.;
     pba->fluid_equation_of_state = ROFT;
