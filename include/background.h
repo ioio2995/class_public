@@ -12,7 +12,11 @@
 
 /** list of possible parametrisations of the DE equation of state */
 
-enum equation_of_state {CLP,EDE};
+enum equation_of_state {CLP,EDE,ROFT};
+
+/** list of ROFT model implementations */
+
+enum roft_type {roft_add,roft_lapse};
 
 
 /** list of possible parametrizations of the varying fundamental constants */
@@ -103,6 +107,8 @@ struct background
   double Omega0_lambda;    /**< \f$ \Omega_{0_\Lambda} \f$: cosmological constant */
   double Omega0_fld;       /**< \f$ \Omega_{0 de} \f$: fluid */
   double Omega0_scf;       /**< \f$ \Omega_{0 scf} \f$: scalar field */
+  double alpha_roft;       /**< late-time clock parameter alpha */
+  enum roft_type roft_model; /**< choice of ROFT model */
   short use_ppf; /**< flag switching on PPF perturbation equations instead of true fluid equations for perturbations. It could have been defined inside
                     perturbation structure, but we leave it here in such way to have all fld parameters grouped. */
   double c_gamma_over_c_fld; /**< ppf parameter defined in eq. (16) of 0808.3125 [astro-ph] */
