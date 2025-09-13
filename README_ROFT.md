@@ -1,8 +1,7 @@
 # ROFT extension for CLASS
 
 This branch adds a phenomenological late--time dark energy model where the fluid
-obeys
-\(w(a) = -1 + \alpha / [3 R(a)]\) with \(R(a) = 1 - \alpha \ln a\).
+obeys \(w(a) = -1 + \alpha / [3 R(a)]\) with \(R(a) = 1 - \alpha \ln a\).
 The implementation introduces two new input parameters:
 
 - `alpha_roft` &mdash; controls the deviation from $\Lambda$CDM. Setting
@@ -10,6 +9,11 @@ The implementation introduces two new input parameters:
 - `roft_model` &mdash; selects the variant of the model. At the moment only the
   `add` model is implemented. A future `lapse` model is blocked by a safety
   check.
+
+Choosing `fluid_equation_of_state = ROFT` always promotes the cosmological
+constant to a dynamical fluid. When `alpha_roft = 0` this branch remains
+numerically identical to $\Lambda$CDM but runs through the `fld` code path for
+consistency.
 
 ## Example run
 
