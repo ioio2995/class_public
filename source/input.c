@@ -3263,6 +3263,41 @@ int input_read_parameters_species(struct file_content * pfc,
 
   /* ** END OF BUDGET EQUATION ** */
 
+  /* ROFT parameters */
+  class_read_double("alpha_roft",pba->alpha_roft);
+  class_call(parser_read_string(pfc,"roft_model",&string1,&flag1,errmsg),
+             errmsg,errmsg);
+  if (flag1 == _TRUE_) {
+    if ((strstr(string1,"lapse") != NULL) || (strstr(string1,"LAPSE") != NULL)) {
+      pba->roft_model = roft_lapse;
+    }
+    else {
+      pba->roft_model = roft_add;
+    }
+  }
+  class_test(pba->roft_model == roft_lapse,
+             errmsg,
+             "ROFT lapse model not implemented yet");
+
+  if (pba->alpha_roft != 0.) {
+    double zmax = 1.e4;
+    class_test(1.+pba->alpha_roft*log(1.+zmax) <= 0.,
+               errmsg,
+               "alpha_roft leads to negative R(z) at z=%g",zmax);
+  }
+
+  /* Allow specifying ROFT equation of state even when Omega0_fld = 0 */
+  if (pba->Omega0_fld == 0.) {
+    class_call(parser_read_string(pfc,"fluid_equation_of_state",&string1,&flag1,errmsg),
+               errmsg,
+               errmsg);
+    if (flag1 == _TRUE_) {
+      if ((strstr(string1,"ROFT") != NULL) || (strstr(string1,"roft") != NULL)) {
+        pba->fluid_equation_of_state = ROFT;
+      }
+    }
+  }
+
   /** 8.a) If Omega fluid is different from 0 */
   if (pba->Omega0_fld != 0.) {
     /** 8.a.1) PPF approximation */
@@ -3312,6 +3347,14 @@ int input_read_parameters_species(struct file_content * pfc,
       class_read_double("Omega_EDE",pba->Omega_EDE);
       class_read_double("cs2_fld",pba->cs2_fld);
     }
+  }
+
+  /* Promote Lambda to fluid for ROFT */
+  if ((pba->alpha_roft != 0.) || (pba->fluid_equation_of_state == ROFT)) {
+    pba->Omega0_fld += pba->Omega0_lambda;
+    pba->Omega0_lambda = 0.;
+    pba->fluid_equation_of_state = ROFT;
+    pba->w0_fld = -1. + pba->alpha_roft/3.;
   }
 
   /** 8.b) If Omega scalar field (SCF) is different from 0 */
@@ -5905,6 +5948,8 @@ int input_default_params(struct background *pba,
   pba->Omega0_fld = 0.;
   pba->Omega0_scf = 0.;
   pba->Omega0_lambda = 1.-pba->Omega0_k-pba->Omega0_g-pba->Omega0_ur-pba->Omega0_b-pba->Omega0_cdm-pba->Omega0_ncdm_tot-pba->Omega0_dcdmdr - pba->Omega0_idr -pba->Omega0_idm;
+  pba->alpha_roft = 0.;
+  pba->roft_model = roft_add;
   /** 8.a) Omega fluid */
   /** 8.a.1) PPF approximation */
   pba->use_ppf = _TRUE_;
